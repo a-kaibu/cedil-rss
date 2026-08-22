@@ -131,7 +131,7 @@ func ParseNews(r io.Reader, sourceURL string) ([]Entry, error) {
 	}
 
 	sort.SliceStable(entries, func(i, j int) bool {
-		return entries[i].Published.After(entries[j].Published)
+		return sessionID(entries[i].Link) > sessionID(entries[j].Link)
 	})
 	return entries, nil
 }
@@ -269,6 +269,15 @@ func dateFromCard(card *html.Node) (time.Time, bool) {
 		return time.Time{}, false
 	}
 	return parseJapaneseDate(dateStr)
+}
+
+func sessionID(link string) int {
+	parts := strings.Split(link, "/")
+	if len(parts) == 0 {
+		return 0
+	}
+	n, _ := strconv.Atoi(parts[len(parts)-1])
+	return n
 }
 
 func parseJapaneseDate(s string) (time.Time, bool) {

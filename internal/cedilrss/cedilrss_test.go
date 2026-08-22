@@ -67,10 +67,10 @@ func TestParseNews(t *testing.T) {
 	if len(entries) != 3 {
 		t.Fatalf("len(entries) = %d, want 3", len(entries))
 	}
-	if entries[0].Title != `一致率で"聴く／聴かない"を判断：AIで変える音声チェック業務` {
+	if entries[0].Title != `ヘッドホンとDAWさえあれば、あなたもデスクで立体音響 ~1から始めるDolby Atmos~` {
 		t.Fatalf("unexpected first title: %q", entries[0].Title)
 	}
-	if entries[0].Link != "https://cedil.cesa.or.jp/cedil_sessions/view/3236" {
+	if entries[0].Link != "https://cedil.cesa.or.jp/cedil_sessions/view/3237" {
 		t.Fatalf("unexpected first link: %q", entries[0].Link)
 	}
 	if got := entries[0].Published.Format("2006-01-02"); got != "2026-01-21" {
