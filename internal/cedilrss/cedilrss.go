@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	defaultSourceURL       = "https://cedil.cesa.or.jp/news"
+	defaultSourceURL       = "https://cedil.cesa.or.jp/"
 	defaultOutputDir       = "public"
 	defaultSiteURL         = "https://a-kaibu.github.io/cedil-rss/"
 	defaultFeedTitle       = "CEDiL 新着資料"
@@ -101,32 +101,29 @@ func ParseNews(r io.Reader, sourceURL string) ([]Entry, error) {
 		return nil, err
 	}
 
-	blocks := findNewsBlocks(root)
+	cards := findSessionCards(root)
 	entries := make([]Entry, 0)
 	seen := map[string]bool{}
-	for _, block := range blocks {
-		published, ok := dateFromBlock(block)
+	for _, card := range cards {
+		href := attr(card, "href")
+		linkURL, ok := sessionURL(base, href)
+		if !ok || seen[linkURL] {
+			continue
+		}
+		title := normalizeText(titleFromCard(card))
+		if title == "" {
+			continue
+		}
+		published, ok := dateFromCard(card)
 		if !ok {
 			continue
 		}
-
-		for _, anchor := range anchors(block) {
-			href := attr(anchor, "href")
-			linkURL, ok := sessionURL(base, href)
-			if !ok || seen[linkURL] {
-				continue
-			}
-			title := normalizeText(textContent(anchor))
-			if title == "" {
-				continue
-			}
-			seen[linkURL] = true
-			entries = append(entries, Entry{
-				Title:     title,
-				Link:      linkURL,
-				Published: published,
-			})
-		}
+		seen[linkURL] = true
+		entries = append(entries, Entry{
+			Title:     title,
+			Link:      linkURL,
+			Published: published,
+		})
 	}
 
 	if len(entries) == 0 {
@@ -202,12 +199,13 @@ func fetch(ctx context.Context, client *http.Client, sourceURL string) ([]byte, 
 	return io.ReadAll(resp.Body)
 }
 
-func findNewsBlocks(n *html.Node) []*html.Node {
+func findSessionCards(n *html.Node) []*html.Node {
 	var out []*html.Node
 	var walk func(*html.Node)
 	walk = func(cur *html.Node) {
-		if cur.Type == html.ElementNode && cur.Data == "div" && attr(cur, "id") == "session_detail_list" {
+		if cur.Type == html.ElementNode && cur.Data == "a" && hasClass(cur, "c-session-card") {
 			out = append(out, cur)
+			return
 		}
 		for child := cur.FirstChild; child != nil; child = child.NextSibling {
 			walk(child)
@@ -217,13 +215,60 @@ func findNewsBlocks(n *html.Node) []*html.Node {
 	return out
 }
 
-func dateFromBlock(block *html.Node) (time.Time, bool) {
-	for child := block.FirstChild; child != nil; child = child.NextSibling {
-		if child.Type == html.ElementNode && child.Data == "h2" {
-			return parseJapaneseDate(textContent(child))
+func hasClass(n *html.Node, cls string) bool {
+	for _, c := range strings.Fields(attr(n, "class")) {
+		if c == cls {
+			return true
 		}
 	}
-	return time.Time{}, false
+	return false
+}
+
+func titleFromCard(card *html.Node) string {
+	var title string
+	var walk func(*html.Node)
+	walk = func(cur *html.Node) {
+		if title != "" {
+			return
+		}
+		if cur.Type == html.ElementNode && cur.Data == "h3" && hasClass(cur, "c-session-card__title") {
+			title = textContent(cur)
+			return
+		}
+		for child := cur.FirstChild; child != nil; child = child.NextSibling {
+			walk(child)
+		}
+	}
+	walk(card)
+	return title
+}
+
+func dateFromCard(card *html.Node) (time.Time, bool) {
+	var dateStr string
+	var walk func(*html.Node)
+	walk = func(cur *html.Node) {
+		if dateStr != "" {
+			return
+		}
+		if cur.Type == html.ElementNode && cur.Data == "dt" {
+			if normalizeText(textContent(cur)) == "日時" {
+				for sib := cur.NextSibling; sib != nil; sib = sib.NextSibling {
+					if sib.Type == html.ElementNode && sib.Data == "dd" {
+						dateStr = textContent(sib)
+						return
+					}
+				}
+			}
+		}
+		for child := cur.FirstChild; child != nil; child = child.NextSibling {
+			walk(child)
+		}
+	}
+	walk(card)
+	if dateStr == "" {
+		return time.Time{}, false
+	}
+	return parseJapaneseDate(dateStr)
 }
 
 func parseJapaneseDate(s string) (time.Time, bool) {

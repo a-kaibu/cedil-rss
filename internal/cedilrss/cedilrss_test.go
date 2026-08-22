@@ -10,24 +10,52 @@ import (
 const fixtureNews = `
 <!DOCTYPE html>
 <html lang="ja"><body>
-  <div id="session_detail_list">
-    <h2>2026年1月21日 セッション資料を追加しました。</h2>
-    <div class="new_article">
-      <p>
-        <p><a href="/cedil_sessions/view/3236">一致率で"聴く／聴かない"を判断：AIで変える音声チェック業務</a></p>
-        <p><a href="/cedil_sessions/view/3237">ヘッドホンとDAWさえあれば、あなたもデスクで立体音響　~1から始めるDolby Atmos~</a></p>
-      </p>
-    </div>
-  </div>
-  <div id="session_detail_list">
-    <h2>2025年11月18日 セッション資料を追加しました。</h2>
-    <div class="new_article">
-      <p>
-        <a href="/cedil_sessions/view/3215">Godotからの教訓：オープンソースを活用して日本の技術的独立を取り戻す<br /></a>
-        <a href="https://example.com/ignore">ignore</a>
-      </p>
-    </div>
-  </div>
+  <ul class="c-session-card-list">
+    <li>
+      <a href="/cedil_sessions/view/3236" class="c-session-card">
+        <h3 class="c-session-card__title">一致率で"聴く／聴かない"を判断：AIで変える音声チェック業務</h3>
+        <dl class="c-meta-list">
+          <div class="c-meta-list__item">
+            <dt class="c-meta-list__label">日時</dt>
+            <dd class="c-meta-list__value">2026年1月21日(水)11時10分 〜 12時10分</dd>
+          </div>
+        </dl>
+      </a>
+    </li>
+    <li>
+      <a href="/cedil_sessions/view/3237" class="c-session-card">
+        <h3 class="c-session-card__title">ヘッドホンとDAWさえあれば、あなたもデスクで立体音響　~1から始めるDolby Atmos~</h3>
+        <dl class="c-meta-list">
+          <div class="c-meta-list__item">
+            <dt class="c-meta-list__label">日時</dt>
+            <dd class="c-meta-list__value">2026年1月21日(水)13時00分 〜 14時00分</dd>
+          </div>
+        </dl>
+      </a>
+    </li>
+    <li>
+      <a href="/cedil_sessions/view/3215" class="c-session-card">
+        <h3 class="c-session-card__title">Godotからの教訓：オープンソースを活用して日本の技術的独立を取り戻す</h3>
+        <dl class="c-meta-list">
+          <div class="c-meta-list__item">
+            <dt class="c-meta-list__label">日時</dt>
+            <dd class="c-meta-list__value">2025年11月18日(火)10時00分 〜 11時00分</dd>
+          </div>
+        </dl>
+      </a>
+    </li>
+    <li>
+      <a href="https://example.com/ignore" class="c-session-card">
+        <h3 class="c-session-card__title">ignore</h3>
+        <dl class="c-meta-list">
+          <div class="c-meta-list__item">
+            <dt class="c-meta-list__label">日時</dt>
+            <dd class="c-meta-list__value">2025年11月18日(火)10時00分 〜 11時00分</dd>
+          </div>
+        </dl>
+      </a>
+    </li>
+  </ul>
 </body></html>`
 
 func TestParseNews(t *testing.T) {
